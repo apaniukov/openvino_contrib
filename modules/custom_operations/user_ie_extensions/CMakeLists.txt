@@ -21,6 +21,8 @@ endif()
 
 include(cmake/platforms.cmake)
 
+include(GNUInstallDirs)
+
 find_package(OpenVINO REQUIRED COMPONENTS Runtime)
 find_package(TBB COMPONENTS tbb tbbmalloc)
 find_package(OpenCV COMPONENTS core)
@@ -103,9 +105,11 @@ endif()
 # Left sentence_piece for backward compatibility
 if("tokenizer" IN_LIST CUSTOM_OPERATIONS)
   add_subdirectory(${SOURCES}/tokenizer)
+  install(FILES ${FAST_TOKENIZER_LIBS} DESTINATION .)
 endif()
-
+# set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_LINK_OPTIONS "-Wl,--allow-shlib-undefined")
 target_link_libraries(${TARGET_NAME} PRIVATE openvino::runtime)
+target_include_directories(${TARGET_NAME} PRIVATE $<TARGET_PROPERTY:openvino::runtime,INTERFACE_INCLUDE_DIRECTORIES>)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE ${CUSTOM_OPERATIONS})
 target_include_directories(${TARGET_NAME} PUBLIC ./include/)
@@ -120,11 +124,27 @@ target_include_directories(${TARGET_NAME} PUBLIC ./include/)
 #     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 # )
 
-# install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION ${TARGET_NAME})
+# install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib)
+
+# install(TARGETS ${TARGET_NAME} DESTINATION . RUNTIME_DEPENDENCIES POST_EXCLUDE_REGEXES "^.*openvino.*$")
+
+# install(
+#   TARGETS ${TARGET_NAME}
+#   EXPORT ov_extension
+#   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# set(CMAKE_PACKAGE_INSTALL_SUBDIR "share/hello/cmake")
+
+# install(
+#   EXPORT ov_extension
+#   NAMESPACE ov_extension::
+#   DESTINATION ${CMAKE_PACKAGE_INSTALL_SUBDIR})
 
 if(DEFINED SKBUILD)
   # Installing the extension module to the root of the package
-  install(TARGETS ${TARGET_NAME} DESTINATION .)
+  install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION . )
+  # install(FILES ${FAST_TOKENIZER_LIBS} DESTINATION .)
+  # install(TARGETS ${TARGET_NAME} DESTINATION . RUNTIME_DEPENDENCIES PRE_INCLUDE_REGEXES ".*libcore_tokenizers.*")
   # The extension module must load the hello library as a dependency when the
   # extension module is loaded. The easiest way to locate the hello library is
   # via RPATH. Absolute RPATHs are possible, but they make the resulting
@@ -139,7 +159,7 @@ if(DEFINED SKBUILD)
       ${TARGET_NAME} PROPERTIES INSTALL_RPATH "@loader_path/${CMAKE_INSTALL_LIBDIR}")
   else()
     set_target_properties(${TARGET_NAME} PROPERTIES INSTALL_RPATH
-                                            "$ORIGIN/${CMAKE_INSTALL_LIBDIR}")
+                                            "$ORIGIN")
   endif()
 
 endif()
