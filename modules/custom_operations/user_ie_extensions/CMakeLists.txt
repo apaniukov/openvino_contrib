@@ -21,7 +21,8 @@ endif()
 
 include(cmake/platforms.cmake)
 
-include(GNUInstallDirs)
+# deleted in setup.py branch
+# include(GNUInstallDirs)
 
 find_package(OpenVINO REQUIRED COMPONENTS Runtime)
 find_package(TBB COMPONENTS tbb tbbmalloc)
@@ -114,52 +115,14 @@ target_link_libraries(${TARGET_NAME} PRIVATE openvino::runtime)
 target_compile_definitions(${TARGET_NAME} PRIVATE ${CUSTOM_OPERATIONS})
 target_include_directories(${TARGET_NAME} PUBLIC ./include/)
 
-# find_package(PythonExtensions REQUIRED)
-# python_extension_module(${TARGET_NAME})
-
-# set_target_properties(${TARGET_NAME}
-#     PROPERTIES
-#     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-#     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
-# )
-
-# install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION lib)
-
-# install(TARGETS ${TARGET_NAME} DESTINATION . RUNTIME_DEPENDENCIES POST_EXCLUDE_REGEXES "^.*openvino.*$")
-
-# install(
-#   TARGETS ${TARGET_NAME}
-#   EXPORT ov_extension
-#   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
-# set(CMAKE_PACKAGE_INSTALL_SUBDIR "share/hello/cmake")
-
-# install(
-#   EXPORT ov_extension
-#   NAMESPACE ov_extension::
-#   DESTINATION ${CMAKE_PACKAGE_INSTALL_SUBDIR})
-
 if(DEFINED SKBUILD)
   # Installing the extension module to the root of the package
   install(TARGETS ${TARGET_NAME} LIBRARY DESTINATION . )
-  # install(FILES ${FAST_TOKENIZER_LIBS} DESTINATION .)
-  # install(TARGETS ${TARGET_NAME} DESTINATION . RUNTIME_DEPENDENCIES PRE_INCLUDE_REGEXES ".*libcore_tokenizers.*")
-  # The extension module must load the hello library as a dependency when the
-  # extension module is loaded. The easiest way to locate the hello library is
-  # via RPATH. Absolute RPATHs are possible, but they make the resulting
-  # binaries not redistributable to other Python installations (conda is broke,
-  # wheel reuse is broke, and more!).
-  #
-  # Placing the hello library in the package and using relative RPATHs that
-  # doesn't point outside of the package means that the built package is
-  # relocatable. This allows for safe binary redistribution.
+
   if(APPLE)
     set_target_properties(
-      ${TARGET_NAME} PROPERTIES INSTALL_RPATH "@loader_path/${CMAKE_INSTALL_LIBDIR}")
+      ${TARGET_NAME} PROPERTIES INSTALL_RPATH "@loader_path")
   else()
-    set_target_properties(${TARGET_NAME} PROPERTIES INSTALL_RPATH
-                                            "$ORIGIN")
+    set_target_properties(${TARGET_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
   endif()
-
 endif()
