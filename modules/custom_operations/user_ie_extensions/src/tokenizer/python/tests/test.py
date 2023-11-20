@@ -1,10 +1,8 @@
-import os
-import openvino
 import ov_tokenizer
-
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from openvino import compile_model, convert_model
-from ov_tokenizer import init_extension, convert_tokenizer, pack_strings, connect_models
+from ov_tokenizer import connect_models, convert_tokenizer, pack_strings
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
 
 checkpoint = "mrm8488/bert-tiny-finetuned-sms-spam-detection"
 hf_tokenizer = AutoTokenizer.from_pretrained(checkpoint)

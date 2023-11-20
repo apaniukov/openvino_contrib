@@ -8,9 +8,6 @@ endif()
 
 option(BUILD_FAST_TOKENIZERS OFF)
 
-# to build only sentencepiece-static target
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL ON)
-
 #
 # Compile flags
 #
@@ -125,14 +122,13 @@ endif()
 
 # set include dirs for specific source files
 target_include_directories(${TARGET_NAME} PRIVATE
-  # sentensepiece
+  # sentencepiece
   "${sentencepiece_SOURCE_DIR}/src/builtin_pb"
   "${sentencepiece_SOURCE_DIR}/src"
   "${sentencepiece_SOURCE_DIR}/third_party/protobuf-lite"
   "${sentencepiece_SOURCE_DIR}"
   "${sentencepiece_BINARY_DIR}"
   # fast_tokenizer
-  ${FAST_TOKENIZER_INCS})
   "${FAST_TOKENIZER_INCS}")
 
 set_property(DIRECTORY ${sentencepiece_SOURCE_DIR}

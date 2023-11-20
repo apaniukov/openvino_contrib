@@ -2,21 +2,15 @@
 # Copyright (C) 2018-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
-
-# import os
-# os.environ["OV_TOKENIZER_PREBUILD_EXTENSION_PATH"] = "path/to/libuser_ov_extensions.so"
-
 import numpy as np
-import openvino
 import pytest
 from openvino import Core
-from transformers import AutoTokenizer
-
 from ov_tokenizer import (
     convert_tokenizer,
     pack_strings,
     unpack_strings,
 )
+from transformers import AutoTokenizer
 
 
 core = Core()

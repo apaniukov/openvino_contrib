@@ -14,21 +14,23 @@ classifiers = [
 ]
 
 dependencies = [
-    "openvino>=2023.1",
+    "openvino",
     "numpy"
 ]
 
 [project.optional-dependencies]
 dev = [
-    "black",
     "ruff",
     "pytest",
 ]
 transformers = [
-    "transformers[sentencepiece]"
+    "transformers[sentencepiece,tiktoken]"
+]
+tiktoken = [
+    "tiktoken"
 ]
 all = [
-    "ov_tokenizer[dev,transformers]"
+    "ov_tokenizer[dev,transformers,tiktoken]"
 ]
 
 
