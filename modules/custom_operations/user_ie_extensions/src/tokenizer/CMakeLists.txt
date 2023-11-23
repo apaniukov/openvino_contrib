@@ -1,15 +1,11 @@
 # Copyright (C) 2018-2023 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 #
-
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
 
 option(BUILD_FAST_TOKENIZERS OFF)
-
-# to build only sentencepiece-static target
-set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY EXCLUDE_FROM_ALL ON)
 
 #
 # Compile flags
@@ -112,10 +108,12 @@ else()
   FetchContent_MakeAvailable(fast_tokenizer)
   include("${fast_tokenizer_SOURCE_DIR}/FastTokenizer.cmake")
 
+  set(fast_tokenizer_SOURCE_DIR "${fast_tokenizer_SOURCE_DIR}" PARENT_SCOPE)
+
   if(WIN32 AND X86_64)
       # we use re2 library in regex_normalization operation, so have to add to this list
       # because prebuilt fast_tokenizers package does not provide this library
-      list(APPEND FAST_TOKENIZER_LIBS re2)
+      set (RE2_LIBS re2)
   endif()
 endif()
 
@@ -134,13 +132,32 @@ target_include_directories(${TARGET_NAME} PRIVATE
   # fast_tokenizer
   ${FAST_TOKENIZER_INCS})
 
+set_property(DIRECTORY ${sentencepiece_SOURCE_DIR}
+             PROPERTY EXCLUDE_FROM_ALL ON)
+
+set_property(DIRECTORY ${re2_SOURCE_DIR}
+             PROPERTY EXCLUDE_FROM_ALL ON)
+
 if(CMAKE_CL_64)
     target_compile_definitions(sentencepiece-static PRIVATE _CRT_SECURE_NO_WARNINGS _SCL_SECURE_NO_WARNINGS)
 endif()
 
-target_link_libraries(${TARGET_NAME} PRIVATE ${FAST_TOKENIZER_LIBS} sentencepiece-static)
+target_link_libraries(${TARGET_NAME} PRIVATE ${FAST_TOKENIZER_LIBS} ${RE2_LIBS} sentencepiece-static)
 
 # string_view is used from cxx17
 string(REPLACE " " ";" cxx_flags "${cxx_flags}")
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17
                                                 COMPILE_OPTIONS "${cxx_flags}")
+#
+# Post build steps to copy core_tokenizers dependencies
+#
+
+if(WIN32 AND X86_64)
+  if(BUILD_FAST_TOKENIZERS)
+    # TODO
+  else()
+    set(extra_dlls "${fast_tokenizer_SOURCE_DIR}/lib/core_tokenizers.dll"
+                   "${fast_tokenizer_SOURCE_DIR}/third_party/lib/icudt70.dll"
+                   "${fast_tokenizer_SOURCE_DIR}/third_party/lib/icuuc70.dll" PARENT_SCOPE)
+  endif()
+endif()
